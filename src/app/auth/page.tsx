@@ -1,3 +1,15 @@
+// Visitor authentication is currently disabled.
+// The login/signup UI is preserved below in comments and can be re-enabled when needed.
+// Admin login remains active and separate at /8392-admin/login.
+
+import { redirect } from "next/navigation";
+
+export default function AuthPage() {
+  // Visitors do not log in — redirect to home
+  redirect("/");
+}
+
+/*
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -35,26 +47,13 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Successfully logged in!");
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
+        const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        toast.success("Successfully signed up! Please check your email to verify your account (if email confirmation is required), or you are logged in automatically.");
-      }
-      
-      // We don't need to manually push if we are successfully logged in and user gets set, 
-      // the useEffect will handle the redirect. But if sign up requires email verification,
-      // the user won't be set immediately.
-      if (isLogin) {
-         // Let useEffect handle it for login
+        toast.success("Successfully signed up!");
       }
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");
@@ -73,44 +72,25 @@ export default function AuthPage() {
           <p className="text-gray-500 text-center mb-8">
             {isLogin ? "Sign in to access your orders and checkout." : "Sign up to start purchasing artworks."}
           </p>
-
           <form onSubmit={handleAuth} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                required
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black outline-none"
-              />
+              <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black outline-none" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                required
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black outline-none"
-              />
+              <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black outline-none" />
             </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 bg-gray-900 text-white font-semibold rounded-lg hover:bg-black transition-colors disabled:opacity-70 mt-4"
-            >
+            <button type="submit" disabled={isLoading}
+              className="w-full py-3 bg-gray-900 text-white font-semibold rounded-lg hover:bg-black transition-colors disabled:opacity-70 mt-4">
               {isLoading ? "Processing..." : isLogin ? "Sign In" : "Sign Up"}
             </button>
           </form>
-
           <div className="mt-6 text-center text-sm text-gray-600">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="font-semibold text-gray-900 hover:underline"
-            >
+            <button onClick={() => setIsLogin(!isLogin)} className="font-semibold text-gray-900 hover:underline">
               {isLogin ? "Sign Up" : "Sign In"}
             </button>
           </div>
@@ -119,3 +99,4 @@ export default function AuthPage() {
     </Container>
   );
 }
+*/

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Menu, ShoppingCart, User as UserIcon, LogOut } from "lucide-react";
+import { Menu /*, ShoppingCart, User as UserIcon, LogOut */ } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { IoLogoInstagram, IoLogoWhatsapp, IoMailSharp } from "react-icons/io5";
 import { SiTiktok } from "react-icons/si";
@@ -18,9 +18,10 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
   const headerRef = useRef<HTMLElement>(null);
   const currentTranslateY = useRef(0);
   
-  // Use cart & auth
-  const { itemCount } = require("@/context/CartContext").useCart();
-  const { user, signOut } = require("@/context/AuthContext").useAuth();
+  // Shop/cart disabled — re-enable when store goes live
+  // const { itemCount } = require("@/context/CartContext").useCart();
+  // Auth is disabled for visitors — admin login is at /8392-admin/login
+  // const { user, signOut } = require("@/context/AuthContext").useAuth();
 
   const handleThemeToggle = () =>
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
@@ -49,13 +50,13 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Navigation links
+  // Navigation links — Shop removed until store goes live
   const navLinks: { href: string; label: string }[] = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/blog", label: "Blog" },
     { href: "/gallery", label: "Gallery" },
-    { href: "/shop", label: "Shop" },
+    // { href: "/shop", label: "Shop" },
     { href: "/contact", label: "Contact" }
   ];
 
@@ -69,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
           } ${className}`}
         style={{ transform: "translate(-50%, 0px)" }}
       >
-        <div className="flex items-center justify-between px-4 md:px-0 w-full gap-10">
+        <div className="flex items-center px-4 md:px-0 w-full gap-10">
           {/* Logo */}
           <div className="flex items-center z-10">
             <Link href={"/"}>
@@ -82,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-6 ml-auto">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -96,8 +97,8 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
           </nav>
 
           {/* Mobile Right-side Icons & Menu */}
-          <div className="flex gap-4 md:hidden items-center">
-            {/* Cart Icon Mobile */}
+          <div className="flex gap-4 md:hidden items-center ml-auto">
+            {/* Cart Icon Mobile — disabled until shop goes live
             <Link href="/checkout" className="relative text-gray-600 hover:text-gray-900 transition mt-1">
               <ShoppingCart className="w-5 h-5" />
               {itemCount > 0 && (
@@ -106,6 +107,7 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
                 </span>
               )}
             </Link>
+            */}
 
             {/* Profile/Sidebar Button */}
             <button
@@ -119,7 +121,7 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
 
           {/* Desktop Right-side Icons */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Cart Icon Desktop */}
+            {/* Cart Icon Desktop — disabled until shop goes live
             <Link href="/checkout" className="relative text-gray-700 hover:text-gray-900 transition">
               <ShoppingCart className="w-5 h-5" />
               {itemCount > 0 && (
@@ -128,28 +130,35 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
                 </span>
               )}
             </Link>
+            */}
 
-            {/* Auth Icon Desktop */}
-            {user ? (
-              <div className="relative group ml-2 mt-1">
-                <button className="text-gray-700 hover:text-gray-900 transition flex items-center" aria-label="User menu">
-                  <UserIcon className="w-5 h-5" />
-                </button>
-                <div className="absolute right-0 mt-0 w-48 bg-white border border-gray-100 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right pt-2">
-                  <div className="py-2 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile Settings</Link>
-                    {user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
-                      <Link href="/8392-admin" className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 font-medium">Admin Dashboard</Link>
-                    )}
-                    <button onClick={() => signOut()} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Sign Out</button>
+
+            {/* Auth Icon Desktop — disabled; visitors do not log in.
+                Admin login is at /8392-admin/login (separate flow).
+                To re-enable: uncomment below and restore useAuth() + UserIcon imports.
+
+                {user ? (
+                  <div className="relative group ml-2 mt-1">
+                    <button className="text-gray-700 hover:text-gray-900 transition flex items-center" aria-label="User menu">
+                      <UserIcon className="w-5 h-5" />
+                    </button>
+                    <div className="absolute right-0 mt-0 w-48 bg-white border border-gray-100 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right pt-2">
+                      <div className="py-2 bg-white rounded-xl shadow-sm border border-gray-100">
+                        <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile Settings</Link>
+                        {user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
+                          <Link href="/8392-admin" className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 font-medium">Admin Dashboard</Link>
+                        )}
+                        <button onClick={() => signOut()} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Sign Out</button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ) : (
-              <Link href="/auth" className="text-gray-700 hover:text-gray-900 transition ml-2 mt-1" title="Sign In">
-                <UserIcon className="w-5 h-5" />
-              </Link>
-            )}
+                ) : (
+                  <Link href="/auth" className="text-gray-700 hover:text-gray-900 transition ml-2 mt-1" title="Sign In">
+                    <UserIcon className="w-5 h-5" />
+                  </Link>
+                )}
+            */}
+
           </div>
         </div>
       </header>

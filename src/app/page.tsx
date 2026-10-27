@@ -22,20 +22,45 @@ const artworks = [
 ];
 
 export default async function Home() {
-  const { data: rawArticles } = await supabase
-    .from("blogs")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(3);
+  let rawArticles: any[] = [];
+  let rawTestimonials: any[] = [];
 
-  const { data: rawTestimonials } = await supabase
-    .from("testimonials")
-    .select("*")
-    .eq("status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(3);
+  try {
+    const fetchArticles = async () => {
+      const { data } = await supabase
+        .from("blogs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(3);
+      return data || [];
+    };
 
-  const articles = (rawArticles || []).map((item) => ({
+    const fetchTestimonials = async () => {
+      const { data } = await supabase
+        .from("testimonials")
+        .select("*")
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(3);
+      return data || [];
+    };
+
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout")), 2500)
+    );
+
+    const [articlesRes, testimonialsRes] = await Promise.race([
+      Promise.all([fetchArticles(), fetchTestimonials()]),
+      timeout.then(() => [[], []] as [any[], any[]]),
+    ]);
+
+    rawArticles = articlesRes || [];
+    rawTestimonials = testimonialsRes || [];
+  } catch (err) {
+    console.warn("Could not fetch latest blogs/testimonials for homepage:", err);
+  }
+
+  const articles = (rawArticles || []).map((item: any) => ({
     id: item.id,
     src: item.image,
     date: new Date(item.created_at).toLocaleDateString("en-US", {
@@ -112,24 +137,28 @@ export default async function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 md:flex-row gap-6 mb-12">
             {artworks.map((product, idx) => (
-              <div
+              <Link
                 key={idx}
-                className="bg-white rounded-lg shadow overflow-hidden flex flex-col hover:shadow-lg transition duration-300"
+                href={`/gallery?category=${encodeURIComponent(product.category)}`}
+                className="bg-white rounded-lg shadow overflow-hidden flex flex-col hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
-                <div className="relative flex-1 flex items-center justify-center bg-gray-100 aspect-[4/3] md:aspect-square">
+                <div className="relative flex-1 flex items-center justify-center bg-gray-100 aspect-[4/3] md:aspect-square overflow-hidden">
                   <img
                     src={product.src}
-                    className="object-cover object-center w-full h-full"
+                    className="object-cover object-center w-full h-full group-hover:scale-105 transition-transform duration-500"
                     alt={product.category}
                   />
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent flex items-end justify-cente p-4">
-                    <span className="text-gray-400 text-md ">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end justify-between p-5">
+                    <span className="text-white text-base md:text-lg font-semibold tracking-wide group-hover:translate-x-1 transition-transform">
                       {product.category}
+                    </span>
+                    <span className="text-xs text-white/80 uppercase font-medium bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full group-hover:bg-white group-hover:text-black transition-colors">
+                      Explore &rarr;
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -146,7 +175,7 @@ export default async function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 ">
-          {articles.map((article, idx) => (
+          {articles.map((article: any, idx: number) => (
             <Link key={idx} href="/articles">
               <article className="group flex flex-col gap-4">
                 <div className="bg-gray-200 aspect-[4/3] rounded-2xl overflow-hidden shadow-sm group-hover:shadow-md transition">
@@ -180,7 +209,7 @@ export default async function Home() {
           <LeaveTestimonial />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.map((t, idx) => (
+          {testimonials.map((t: any, idx: number) => (
             <div
               key={idx}
               className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col items-start shadow-sm"

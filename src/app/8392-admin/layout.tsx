@@ -88,13 +88,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Mobile Menu Button */}
-      <div className="md:hidden fixed top-0 left-0 w-full bg-white shadow-sm z-20 px-4 py-3 flex items-center justify-between border-b border-gray-200">
-        <h2 className="text-xl font-bold text-gray-900">Admin</h2>
+      <div className="md:hidden fixed top-0 left-0 w-full bg-white shadow-sm z-20 px-4 py-4 flex items-center gap-4 border-b border-gray-200">
         <button 
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="text-gray-600 hover:text-gray-900 focus:outline-none"
+          className="text-gray-600 hover:text-gray-900 focus:outline-none flex-shrink-0"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {isMobileMenuOpen ? (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             ) : (
@@ -102,6 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )}
           </svg>
         </button>
+        <h2 className="text-2xl font-bold text-gray-900">Admin</h2>
       </div>
 
       {/* Mobile Sidebar Backdrop */}
@@ -188,7 +188,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 md:pt-0 pt-14">
+      <div className="flex-1 flex flex-col min-w-0 md:pt-0 pt-16">
         <main className="flex-1 p-4 md:p-8">{children}</main>
       </div>
     </div>

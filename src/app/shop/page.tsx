@@ -1,3 +1,13 @@
+// Shop is currently disabled — this page redirects to home.
+// Re-enable by removing the redirect and restoring the original component below.
+
+import { redirect } from "next/navigation";
+
+export default function ShopPage() {
+  redirect("/");
+}
+
+/*
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -61,3 +71,4 @@ const Shop = () => {
 };
 
 export default Shop;
+*/
