@@ -1,9 +1,11 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import Link from "next/link";
 import { Calendar } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import Loading from "@/ui/Loading";
+import { SocialEmbed } from "@/ui/SocialEmbed";
+import { FALLBACK_BLOGS, formatBlogDate } from "@/constants/fallbackBlogs";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -12,6 +14,8 @@ interface BlogImage {
   image: string;
   description: string;
   date: string;
+  title?: string;
+  social_post_url?: string;
 }
 
 export default function BlogPage() {
@@ -19,30 +23,31 @@ export default function BlogPage() {
   const [blogsData, setBlogsData] = useState<BlogImage[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal state
-  const [selected, setSelected] = useState<BlogImage | null>(null);
-
-  // Fetch only images from backend
+  // Fetch blogs from backend
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.from("blogs").select("*");
+        const { data, error } = await supabase
+          .from("blogs")
+          .select("*")
+          .order("created_at", { ascending: false });
+
         if (error) throw error;
-        // Only keep id, image, description, date
+
         const transformed: BlogImage[] = (data || []).map((item: any) => ({
-          id: item._id || item.id,
+          id: item.id || item._id,
           image: item.image,
           description: item.description,
-          date: new Date(item.created_at).toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric"
-          })
+          title: item.title,
+          social_post_url: item.social_post_url || "",
+          date: formatBlogDate(item.created_at),
         }));
-        setBlogsData(transformed);
+
+        setBlogsData(transformed.length > 0 ? transformed : (FALLBACK_BLOGS as any));
       } catch (error) {
         console.error("Error fetching blogs data", error);
+        setBlogsData(FALLBACK_BLOGS as any);
       }
       setLoading(false);
     };
@@ -62,132 +67,125 @@ export default function BlogPage() {
   };
 
   return (
-    <>
-      {/* Modal for more details */}
-      <Transition appear show={!!selected} as="div">
-        <Dialog
-          as="div"
-          className="relative z-50 focus:outline-none"
-          onClose={() => setSelected(null)}
-        >
-          <div className="fixed inset-0 z-50 w-screen overflow-y-auto bg-black/30 backdrop-blur-sm">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <Transition.Child
-                enter="ease-in duration-300"
-                enterFrom="opacity-0 transform-[scale(90%)]"
-                enterTo="opacity-100 transform-[scale(100%)] "
-                leave="ease-in duration-100"
-                leaveFrom="opacity-100 transform-[scale(100%)]"
-                leaveTo="opacity-0 transform-[scale(50%)] "
-              >
-                <Dialog.Panel className="w-full max-w-lg rounded-2xl bg-black/30 backdrop-blur-2xl z-50 p-6">
-                  <img
-                    src={selected?.image}
-                    alt="Blog"
-                    className="w-full object-cover rounded-lg max-h-96"
-                  />
-                  <div className="mt-4 text-white">
-                    <div className="flex items-center gap-2 mb-2 text-sm text-gray-200">
-                      <Calendar className="w-4 h-4" />
-                      {selected?.date}
-                    </div>
-                    <Dialog.Title className="text-lg font-semibold mb-2">
-                      Description
-                    </Dialog.Title>
-                    <Dialog.Description className="text-base whitespace-pre-line">
-                      {selected?.description}
-                    </Dialog.Description>
-                  </div>
-                  <button
-                    className="mt-6 px-4 py-2 rounded bg-gray-700 text-white hover:bg-gray-600"
-                    onClick={() => setSelected(null)}
-                  >
-                    Close
-                  </button>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
+    <main className="w-full mx-auto px-4 md:px-8 pt-4 md:pt-12 pb-16 flex flex-col items-center">
+      {/* Header */}
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl md:text-5xl font-bold mb-4 text-center text-gray-900 tracking-tight">
+          Check Out Our Blog
+        </h1>
+        <p className="text-gray-600 max-w-xl mx-auto text-sm md:text-base">
+          Discover stories, drawing insights, and updates from the world of hyper-realistic pencil art.
+        </p>
+      </div>
 
-      <main className="w-full mx-auto px-4 md:px-8 py-12 flex flex-col items-center">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold mb-8 text-center text-gray-900">
-            Explore Our Blog Gallery
-          </h1>
-          <p className="text-gray-600 max-w-xl mx-auto">
-            Discover artwork and images from our community of satisfied
-            customers.
-          </p>
+      {/* Blog Cards Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-12 w-full max-w-7xl animate-pulse">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex flex-col gap-3">
+              <div className="aspect-[16/10] sm:aspect-square w-full bg-gray-200 rounded-2xl sm:rounded-[28px]" />
+              <div className="h-4 bg-gray-200 rounded-full w-3/4 mt-1" />
+              <div className="h-3.5 bg-gray-200 rounded-full w-1/2" />
+            </div>
+          ))}
         </div>
+      ) : blogsData.length === 0 ? (
+        <div className="text-center py-16 bg-gray-50 rounded-3xl border border-gray-100 max-w-lg w-full p-8 my-8">
+          <Calendar className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-600 font-medium">No blog articles published yet.</p>
+          <p className="text-xs text-gray-400 mt-1">Check back soon for new drawing stories and tutorials.</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-12 w-full max-w-7xl">
+            {paginatedData.map((item) => {
+              const blogHref = item.id ? `/blog/${item.id}` : "/blog";
 
-        {/* Blog Image Cards */}
-        {loading ? (
-          <Loading />
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 w-full max-w-7xl">
-              {paginatedData.map((item) => (
-                <article
+              return (
+                <Link
                   key={item.id}
-                  className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-lg transition"
-                  onClick={() => setSelected(item)}
+                  href={blogHref}
+                  className="group flex flex-col cursor-pointer"
                 >
-                  <img src={item.image} className="w-full h-56 object-cover" />
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 text-gray-400 text-xs mb-2">
-                      <Calendar className="w-3 h-3" />
-                      {item.date}
-                    </div>
-                    <p className="text-gray-700 text-sm line-clamp-3">
-                      {item.description}
-                    </p>
+                  {/* Rounded media container - shortened height on mobile */}
+                  <div className="relative aspect-[16/10] sm:aspect-square w-full rounded-2xl sm:rounded-[28px] overflow-hidden bg-gray-100 shadow-sm transition-all duration-300 group-hover:shadow-md">
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                        alt={item.title || "Blog post"}
+                      />
+                    ) : item.social_post_url ? (
+                      <div className="w-full h-full overflow-hidden p-3 flex items-center justify-center bg-gray-50 pointer-events-none">
+                        <SocialEmbed url={item.social_post_url} />
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <Calendar className="w-12 h-12 stroke-[1.5]" />
+                      </div>
+                    )}
                   </div>
-                </article>
-              ))}
-            </div>
 
-            {/* Pagination Controls */}
-            {blogsData.length > ITEMS_PER_PAGE && (
-              <div className="flex justify-center items-center gap-4 mb-8">
-                <button
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-gray-300"
-                >
-                  Previous
-                </button>
-                <div className="flex gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (number) => (
-                      <button
-                        key={number}
-                        onClick={() => handlePageChange(number)}
-                        className={`px-3 py-2 rounded-md transition-colors ${
-                          page === number
-                            ? "bg-gray-900 text-white font-semibold"
-                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
-                      >
-                        {number}
-                      </button>
-                    )
-                  )}
-                </div>
-                <button
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-gray-300"
-                >
-                  Next
-                </button>
+                  {/* Clean text section below image */}
+                  <div className="mt-3.5 px-1 flex flex-col">
+                    <h3 className="text-base md:text-lg font-bold text-gray-900 leading-snug line-clamp-1 group-hover:text-gray-600 transition-colors">
+                      {item.title || item.description}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-xs md:text-sm text-gray-400 font-medium mt-1">
+                      <time>{item.date}</time>
+                      {item.title && item.description && (
+                        <>
+                          <span>•</span>
+                          <span className="line-clamp-1 text-gray-500 font-normal">
+                            {item.description}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Pagination Controls */}
+          {blogsData.length > ITEMS_PER_PAGE && (
+            <div className="flex justify-center items-center gap-4 mb-8">
+              <button
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-gray-300 text-sm font-medium"
+              >
+                Previous
+              </button>
+              <div className="flex gap-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (number) => (
+                    <button
+                      key={number}
+                      onClick={() => handlePageChange(number)}
+                      className={`px-3 py-2 rounded-md transition-colors text-sm font-medium ${
+                        page === number
+                          ? "bg-gray-900 text-white font-semibold"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
+                    >
+                      {number}
+                    </button>
+                  )
+                )}
               </div>
-            )}
-          </>
-        )}
-      </main>
-    </>
+              <button
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-gray-300 text-sm font-medium"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </main>
   );
 }

@@ -1,13 +1,29 @@
-// Shop is currently disabled — this page redirects to home.
-// Re-enable by removing the redirect and restoring the original component below.
+import { ComingSoon } from "@/ui/ComingSoon";
+import { Metadata } from "next";
 
-import { redirect } from "next/navigation";
+export const metadata: Metadata = {
+  title: "Artwork Shop — Coming Soon | Smartist Fine Art",
+  description:
+    "Original ready-to-hang pencil drawings, fine art prints, and custom commissions are launching soon. Explore the gallery or commission a bespoke portrait in the meantime.",
+};
 
 export default function ShopPage() {
-  redirect("/");
+  return (
+    <ComingSoon
+      title="The Artwork Shop is Coming Soon"
+      subtitle="We are currently curating an exclusive collection of original hand-drawn graphite artworks and limited edition fine art prints available for direct online purchase. In the meantime, you can explore the exhibition gallery or commission a one-of-a-kind custom piece."
+      badge="Shop Launching Soon"
+      showShopHighlights={true}
+    />
+  );
 }
 
 /*
+// ─────────────────────────────────────────────────────────────────────────────
+// NOTE: When ready to activate full cart/checkout eCommerce on /shop,
+// restore the interactive product grid component below:
+// ─────────────────────────────────────────────────────────────────────────────
+
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -16,7 +32,7 @@ import Loading from "@/ui/Loading";
 import Container from "@/ui/Container";
 import ShopProductCard from "@/ui/ShopProductCard";
 
-const Shop = () => {
+const ActiveShop = () => {
   const [products, setProducts] = useState<ProductProps[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -69,6 +85,4 @@ const Shop = () => {
     </div>
   );
 };
-
-export default Shop;
 */

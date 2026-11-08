@@ -199,7 +199,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             </ul>
           </div>
 
-          {/* User Actions */}
+          {/* User Actions
           {!user && (
             <div className="pt-6 mt-4 border-t border-gray-200">
               <Link
@@ -211,7 +211,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 Sign In
               </Link>
             </div>
-          )}
+          )} */}
         </nav>
       </div>
     </>

@@ -7,7 +7,7 @@ export function ClientMainWrapper({ children }: { children: React.ReactNode }) {
   const isAdmin = pathname?.startsWith("/8392-admin");
   
   return (
-    <main className={`flex-1 w-full ${isAdmin ? "" : "pt-0 md:pt-32"}`}>
+    <main className={`flex-1 w-full ${isAdmin ? "" : "pt-24 md:pt-32"}`}>
       {children}
     </main>
   );

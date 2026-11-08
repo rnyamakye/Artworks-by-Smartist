@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import YouTube from "react-youtube";
 import { supabase } from "@/lib/supabase";
 import Loading from "@/ui/Loading";
+import { SocialEmbed } from "@/ui/SocialEmbed";
 
 interface TutorialVideo {
   id: string;
@@ -10,6 +11,7 @@ interface TutorialVideo {
   youtubeId: string;
   description: string;
   date: string;
+  social_post_url?: string;
 }
 
 const ITEMS_PER_PAGE = 6;
@@ -31,6 +33,7 @@ export default function TutorialsPage() {
           title: item.title,
           youtubeId: item.youtube_id,
           description: item.description,
+          social_post_url: item.social_post_url || "",
           date: new Date(item.created_at).toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",
@@ -93,6 +96,11 @@ export default function TutorialsPage() {
                 className="bg-white rounded-md shadow-sm overflow-hidden cursor-pointer hover:shadow-lg transition"
               >
                 <YouTube videoId={video.youtubeId} opts={opts} />
+                {video.social_post_url && (
+                  <div className="px-4">
+                    <SocialEmbed url={video.social_post_url} />
+                  </div>
+                )}
               </article>
             ))}
           </div>

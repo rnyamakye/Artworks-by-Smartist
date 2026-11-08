@@ -31,13 +31,13 @@ export const Footer = () => {
               <div className="mt-6 flex items-center group">
                 <Link
                   href="/commission"
-                  className="font-semibold text-gray-900 text-sm bg-white py-2 px-4 rounded-l-md group-hover:bg-gray-900 group-hover:text-white transition duration-300 border-r border-gray-100"
+                  className="font-semibold text-white text-sm  py-2 px-4 rounded-md bg-gray-900 group-hover:text-white transition duration-300 border-r hover:bg-gray-800"
                 >
                   Commission yours
                 </Link>
                 <Link
                   href="/contact"
-                  className="bg-gray-900 text-white px-4 pl-6 py-2 rounded-r-md text-sm font-semibold group-hover:bg-white group-hover:text-gray-900 transition duration-300"
+                  className=" text-gray-900 px-5 ml-3 py-2 rounded-md text-sm font-semibold bg-white group-hover:text-gray-900 transition duration-300"
                 >
                   Contact Us
                 </Link>

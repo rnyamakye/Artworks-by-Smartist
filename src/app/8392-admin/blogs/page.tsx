@@ -17,6 +17,7 @@ export default function BlogsManager() {
     description: "",
     imageFile: null as File | null,
     existingImageUrl: "",
+    social_post_url: "",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -54,13 +55,14 @@ export default function BlogsManager() {
       description: blog.description || "",
       imageFile: null,
       existingImageUrl: blog.image || "",
+      social_post_url: blog.social_post_url || "",
     });
     setView("form");
   };
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({ title: "", description: "", imageFile: null, existingImageUrl: "" });
+    setFormData({ title: "", description: "", imageFile: null, existingImageUrl: "", social_post_url: "" });
     setView("list");
   };
 
@@ -92,6 +94,7 @@ export default function BlogsManager() {
         title: formData.title,
         description: formData.description,
         image: imageUrl || null,
+        social_post_url: formData.social_post_url || null,
       };
 
       if (editingId) {
@@ -190,6 +193,20 @@ export default function BlogsManager() {
               </button>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Social Media Post URL (optional)
+              </label>
+              <input
+                type="url"
+                value={formData.social_post_url}
+                onChange={(e) => setFormData({ ...formData, social_post_url: e.target.value })}
+                placeholder="https://www.instagram.com/p/... or https://www.tiktok.com/@..."
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+              />
+              <p className="text-xs text-gray-500 mt-1">Paste a link to an Instagram, TikTok, Twitter/X, YouTube, or Facebook post to embed it on the blog page.</p>
+            </div>
+
             <div className="pt-4 border-t border-gray-100 flex justify-end">
               <button
                 type="submit"
@@ -225,7 +242,12 @@ export default function BlogsManager() {
                         <div className="w-16 h-12 bg-gray-200 rounded"></div>
                       )}
                     </td>
-                    <td className="p-4 font-medium text-gray-900 max-w-[200px] truncate">{item.title}</td>
+                    <td className="p-4 font-medium text-gray-900 max-w-[200px] truncate">
+                      {item.title}
+                      {item.social_post_url && (
+                        <span className="ml-2 text-base" title={item.social_post_url}>🔗</span>
+                      )}
+                    </td>
                     <td className="p-4 text-gray-600 max-w-[300px] truncate">{item.description}</td>
                     <td className="p-4 flex items-center justify-end gap-2">
                       <button onClick={() => handleEdit(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
@@ -261,7 +283,12 @@ export default function BlogsManager() {
                 )}
                 
                 <div>
-                  <h3 className="font-semibold text-gray-900 line-clamp-1">{item.title}</h3>
+                  <h3 className="font-semibold text-gray-900 line-clamp-1">
+                    {item.title}
+                    {item.social_post_url && (
+                      <span className="ml-2 text-base" title={item.social_post_url}>🔗</span>
+                    )}
+                  </h3>
                   <p className="text-sm text-gray-500 line-clamp-2 mt-1">{item.description}</p>
                 </div>
                 

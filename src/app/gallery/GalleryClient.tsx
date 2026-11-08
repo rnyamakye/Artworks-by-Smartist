@@ -14,6 +14,7 @@ export interface Product {
   images: string[];
   in_stock: boolean;
   created_at: string;
+  social_post_url?: string | null;
 }
 
 type SortOption = "newest" | "oldest" | "name_asc" | "name_desc" | "category";
@@ -45,6 +46,7 @@ export default function GalleryClient({
     initialCategory || "All"
   );
   const [sortOpen, setSortOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const productsPerPage = 12;
 
   // Restore saved page
@@ -169,14 +171,7 @@ export default function GalleryClient({
               Explore hand-drawn graphite and pencil artworks, custom portraits, and exclusive exhibitions.
             </p>
             <div className="flex items-center justify-center gap-2 mt-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                {processedProducts.length}{" "}
-                {processedProducts.length === 1 ? "piece" : "pieces"}
-                {activeCategory !== "All"
-                  ? ` in ${activeCategory}`
-                  : " in collection"}
-              </span>
+
               {activeCategory !== "All" && (
                 <button
                   onClick={() => setActiveCategory("All")}
@@ -189,43 +184,76 @@ export default function GalleryClient({
           </div>
 
           {/* Controls bar */}
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between pb-2 border-b border-gray-100">
-            {/* Category pills */}
-            <div className="flex flex-wrap items-center gap-2">
-              {categories.map((cat) => {
-                const count = categoryCounts[cat] || 0;
-                const isActive =
-                  activeCategory.toLowerCase() === cat.toLowerCase();
+          <div className="flex flex-row gap-4 items-start sm:items-center justify-between pb-2 border-b border-gray-100">
+            {/* Category dropdown */}
+            <div className="relative flex-shrink-0">
+              <button
+                onClick={() => {
+                  setCategoryOpen((o) => !o);
+                  setSortOpen(false);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors shadow-sm"
+              >
 
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                      isActive
-                        ? "bg-gray-900 text-white shadow-sm"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                <span className="text-gray-900 font-semibold">
+                  {activeCategory}
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
+                  {categoryCounts[activeCategory] || 0}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${categoryOpen ? "rotate-180" : ""
                     }`}
-                  >
-                    <span>{cat}</span>
-                    <span
-                      className={`text-xs px-1.5 py-0.2 rounded-full ${
-                        isActive
-                          ? "bg-white/20 text-white"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
+                />
+              </button>
+
+              {categoryOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setCategoryOpen(false)}
+                  />
+                  <div className="absolute left-0 mt-2 w-64 max-h-80 overflow-y-auto bg-white border border-gray-100 rounded-2xl shadow-xl z-20 py-1">
+                    {categories.map((cat) => {
+                      const count = categoryCounts[cat] || 0;
+                      const isSelected =
+                        activeCategory.toLowerCase() === cat.toLowerCase();
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            setActiveCategory(cat);
+                            setCategoryOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between ${isSelected
+                            ? "bg-gray-900 text-white font-medium"
+                            : "text-gray-700 hover:bg-gray-50"
+                            }`}
+                        >
+                          <span>{cat}</span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full ${isSelected
+                              ? "bg-white/20 text-white"
+                              : "bg-gray-100 text-gray-600"
+                              }`}
+                          >
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Sort dropdown */}
-            <div className="relative flex-shrink-0 self-end lg:self-auto">
+            <div className="relative flex-shrink-0 self-end sm:self-auto">
               <button
-                onClick={() => setSortOpen((o) => !o)}
+                onClick={() => {
+                  setSortOpen((o) => !o);
+                  setCategoryOpen(false);
+                }}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors shadow-sm"
               >
                 <span className="text-gray-400">Sort by:</span>
@@ -233,9 +261,8 @@ export default function GalleryClient({
                   {SORT_LABELS[sortBy]}
                 </span>
                 <ChevronDown
-                  className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                    sortOpen ? "rotate-180" : ""
-                  }`}
+                  className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${sortOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
@@ -255,11 +282,10 @@ export default function GalleryClient({
                             setSortBy(option);
                             setSortOpen(false);
                           }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between ${
-                            sortBy === option
-                              ? "bg-gray-900 text-white font-medium"
-                              : "text-gray-700 hover:bg-gray-50"
-                          }`}
+                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between ${sortBy === option
+                            ? "bg-gray-900 text-white font-medium"
+                            : "text-gray-700 hover:bg-gray-50"
+                            }`}
                         >
                           <span>{SORT_LABELS[option]}</span>
                           {sortBy === option && (
@@ -318,11 +344,10 @@ export default function GalleryClient({
                 <button
                   key={num}
                   onClick={() => changePageWithLoading(num)}
-                  className={`w-9 h-9 text-sm rounded-lg font-medium transition-colors ${
-                    currentPage === num
-                      ? "bg-gray-900 text-white"
-                      : "border border-gray-200 hover:bg-gray-50 text-gray-700"
-                  }`}
+                  className={`w-9 h-9 text-sm rounded-lg font-medium transition-colors ${currentPage === num
+                    ? "bg-gray-900 text-white"
+                    : "border border-gray-200 hover:bg-gray-50 text-gray-700"
+                    }`}
                 >
                   {num}
                 </button>

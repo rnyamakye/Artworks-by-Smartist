@@ -7,7 +7,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div>
       <Header />
-      <Container>{children}</Container>
+      <Container className="pt-24 md:pt-32">{children}</Container>
       <Footer />
       <Toaster
         position="bottom-right"

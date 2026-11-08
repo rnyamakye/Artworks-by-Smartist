@@ -16,6 +16,7 @@ export default function TutorialsManager() {
     title: "",
     description: "",
     youtube_id: "",
+    social_post_url: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -51,13 +52,14 @@ export default function TutorialsManager() {
       title: tutorial.title || "",
       description: tutorial.description || "",
       youtube_id: tutorial.youtube_id || "",
+      social_post_url: tutorial.social_post_url || "",
     });
     setView("form");
   };
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({ title: "", description: "", youtube_id: "" });
+    setFormData({ title: "", description: "", youtube_id: "", social_post_url: "" });
     setView("list");
   };
 
@@ -66,12 +68,19 @@ export default function TutorialsManager() {
     setSubmitting(true);
 
     try {
+      const tutorialData = {
+        title: formData.title,
+        description: formData.description,
+        youtube_id: formData.youtube_id,
+        social_post_url: formData.social_post_url || null,
+      };
+
       if (editingId) {
-        const { error } = await supabase.from("tutorials").update(formData).eq("id", editingId);
+        const { error } = await supabase.from("tutorials").update(tutorialData).eq("id", editingId);
         if (error) throw error;
         toast.success("Tutorial updated");
       } else {
-        const { error } = await supabase.from("tutorials").insert([formData]);
+        const { error } = await supabase.from("tutorials").insert([tutorialData]);
         if (error) throw error;
         toast.success("Tutorial created");
       }
@@ -145,6 +154,20 @@ export default function TutorialsManager() {
               ></textarea>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Social Media Post URL (optional)
+              </label>
+              <input
+                type="url"
+                value={formData.social_post_url}
+                onChange={(e) => setFormData({ ...formData, social_post_url: e.target.value })}
+                placeholder="https://www.instagram.com/p/... or https://www.tiktok.com/@..."
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+              />
+              <p className="text-xs text-gray-500 mt-1">Paste a link to an Instagram, TikTok, Twitter/X, YouTube, or Facebook post to embed alongside this tutorial.</p>
+            </div>
+
             <div className="pt-4 border-t border-gray-100 flex justify-end">
               <button
                 type="submit"
@@ -180,7 +203,12 @@ export default function TutorialsManager() {
                         className="w-16 h-12 rounded object-cover"
                       />
                     </td>
-                    <td className="p-4 font-medium text-gray-900">{item.title}</td>
+                    <td className="p-4 font-medium text-gray-900">
+                      {item.title}
+                      {item.social_post_url && (
+                        <span className="ml-2 text-base" title={item.social_post_url}>🔗</span>
+                      )}
+                    </td>
                     <td className="p-4 text-gray-600">{item.youtube_id}</td>
                     <td className="p-4 flex items-center justify-end gap-2">
                       <button onClick={() => handleEdit(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
@@ -214,7 +242,12 @@ export default function TutorialsManager() {
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 line-clamp-1">{item.title}</h3>
+                  <h3 className="font-semibold text-gray-900 line-clamp-1">
+                    {item.title}
+                    {item.social_post_url && (
+                      <span className="ml-2 text-base" title={item.social_post_url}>🔗</span>
+                    )}
+                  </h3>
                   <div className="text-xs text-gray-500 mb-2 truncate">ID: {item.youtube_id}</div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => handleEdit(item)} className="flex-1 py-1.5 bg-blue-50 text-blue-600 rounded-md text-sm font-medium hover:bg-blue-100 flex items-center justify-center gap-1">

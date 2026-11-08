@@ -17,7 +17,7 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
   const lastScrollY = useRef(0);
   const headerRef = useRef<HTMLElement>(null);
   const currentTranslateY = useRef(0);
-  
+
   // Shop/cart disabled — re-enable when store goes live
   // const { itemCount } = require("@/context/CartContext").useCart();
   // Auth is disabled for visitors — admin login is at /8392-admin/login
@@ -50,13 +50,13 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Navigation links — Shop removed until store goes live
+  // Navigation links
   const navLinks: { href: string; label: string }[] = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/blog", label: "Blog" },
     { href: "/gallery", label: "Gallery" },
-    // { href: "/shop", label: "Shop" },
+    { href: "/shop", label: "Shop" },
     { href: "/contact", label: "Contact" }
   ];
 
@@ -65,8 +65,8 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
       <header
         ref={headerRef}
         className={`fixed z-50 left-1/2 w-[95%] md:w-full max-w-7xl md:px-12 py-3 top-2 md:top-4 transition-colors duration-300 ${isScrolled
-            ? "bg-white/90 backdrop-blur-md shadow-md rounded-full"
-            : "bg-transparent shadow-sm rounded-full"
+          ? "bg-white/90 backdrop-blur-md shadow-md rounded-full"
+          : "bg-transparent shadow-sm rounded-full"
           } ${className}`}
         style={{ transform: "translate(-50%, 0px)" }}
       >
@@ -111,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
 
             {/* Profile/Sidebar Button */}
             <button
-              className="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-200 transition duration-300"
+              className="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-100 transition duration-300"
               onClick={() => setShowSidebar(true)}
               aria-label="Open Sidebar"
             >

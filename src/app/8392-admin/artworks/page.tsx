@@ -39,6 +39,7 @@ export default function ArtworksManager() {
   const [sortBy, setSortBy] = useState<AdminSortOption>("newest");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOpen, setSortOpen] = useState(false);
+  const [categoryFilterOpen, setCategoryFilterOpen] = useState(false);
 
   // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -51,6 +52,7 @@ export default function ArtworksManager() {
     price: "",
     imageFile: null as File | null,
     existingImageUrl: "",
+    social_post_url: "",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -177,6 +179,7 @@ export default function ArtworksManager() {
       price: artwork.price !== null && artwork.price !== undefined ? String(artwork.price) : "",
       imageFile: null,
       existingImageUrl: artwork.images?.[0] || "",
+      social_post_url: artwork.social_post_url || "",
     });
     setView("form");
   };
@@ -192,6 +195,7 @@ export default function ArtworksManager() {
       price: "",
       imageFile: null,
       existingImageUrl: "",
+      social_post_url: "",
     });
     setView("list");
   };
@@ -240,6 +244,7 @@ export default function ArtworksManager() {
         price: formData.price ? parseFloat(formData.price) : null,
         images: imageUrl ? [imageUrl] : [],
         in_stock: true,
+        social_post_url: formData.social_post_url || null,
       };
 
       if (editingId) {
@@ -320,64 +325,42 @@ export default function ArtworksManager() {
               />
             </div>
 
-            {/* Category Selector with standard categories */}
+            {/* Category Selector dropdown */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Artwork Category *
               </label>
-              <p className="text-xs text-gray-500 mb-3">
-                Select a standard exhibition category to reflect directly in the gallery filters, or define a custom one:
-              </p>
-              
-              {/* Category Quick Pills */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {DEFAULT_CATEGORIES.map((cat) => {
-                  const isSelected =
-                    !isCustomCategory &&
-                    formData.category.toLowerCase() === cat.toLowerCase();
-                  return (
-                    <button
-                      type="button"
-                      key={cat}
-                      onClick={() => handleSelectCategory(cat)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        isSelected
-                          ? "bg-gray-900 text-white shadow-sm ring-2 ring-gray-900 ring-offset-1"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => handleSelectCategory("CUSTOM")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                    isCustomCategory
-                      ? "bg-gray-900 text-white border-gray-900 shadow-sm"
-                      : "border-dashed border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  + Custom Category
-                </button>
-              </div>
+              <select
+                value={isCustomCategory ? "CUSTOM" : formData.category}
+                onChange={(e) => handleSelectCategory(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none text-sm bg-white"
+              >
+                <option value="" disabled>
+                  Select a category...
+                </option>
+                {DEFAULT_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+                <option value="CUSTOM">+ Custom Category</option>
+              </select>
 
-              {/* Category Input Field */}
-              <input
-                required
-                type="text"
-                placeholder={
-                  isCustomCategory
-                    ? "Type custom category name..."
-                    : "Selected category"
-                }
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none text-sm"
-              />
+              {/* Custom Category Input Field (shown when custom is selected) */}
+              {isCustomCategory && (
+                <div className="mt-3">
+                  <input
+                    required
+                    type="text"
+                    placeholder="Type custom category name..."
+                    value={formData.category}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none text-sm"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -474,6 +457,24 @@ export default function ArtworksManager() {
               </button>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Social Media Post URL (optional)
+              </label>
+              <input
+                type="url"
+                value={formData.social_post_url}
+                onChange={(e) =>
+                  setFormData({ ...formData, social_post_url: e.target.value })
+                }
+                placeholder="https://www.instagram.com/p/... or https://www.tiktok.com/@..."
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Paste a link to an Instagram, TikTok, Twitter/X, YouTube, or Facebook post to embed alongside this artwork.
+              </p>
+            </div>
+
             <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
               <button
                 type="button"
@@ -498,8 +499,8 @@ export default function ArtworksManager() {
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Controls Bar: Search & Sort */}
-          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
+          {/* Controls Bar: Search, Category Filter & Sort */}
+          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
@@ -520,88 +521,124 @@ export default function ArtworksManager() {
               )}
             </div>
 
-            {/* Sort Dropdown */}
-            <div className="relative flex-shrink-0">
-              <button
-                onClick={() => setSortOpen((o) => !o)}
-                className="w-full sm:w-auto flex items-center justify-between gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors shadow-sm"
-              >
-                <div className="flex items-center gap-1.5">
-                  <Filter className="w-3.5 h-3.5 text-gray-400" />
-                  <span className="text-gray-500">Sort:</span>
-                  <span className="text-gray-900">{ADMIN_SORT_LABELS[sortBy]}</span>
-                </div>
-                <ChevronDown
-                  className={`w-4 h-4 text-gray-400 transition-transform ${
-                    sortOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {sortOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setSortOpen(false)}
-                  />
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-20 overflow-hidden py-1">
-                    {(Object.keys(ADMIN_SORT_LABELS) as AdminSortOption[]).map(
-                      (option) => (
-                        <button
-                          key={option}
-                          onClick={() => {
-                            setSortBy(option);
-                            setSortOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${
-                            sortBy === option
-                              ? "bg-gray-900 text-white font-medium"
-                              : "text-gray-700 hover:bg-gray-50"
-                          }`}
-                        >
-                          <span>{ADMIN_SORT_LABELS[option]}</span>
-                        </button>
-                      )
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Category Filter Pills (Reflecting gallery categories in admin panel) */}
-          <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-500" /> Category:
-            </span>
-            {allCategories.map((cat) => {
-              const count = categoryCounts[cat] || 0;
-              const isSelected =
-                selectedCategory.toLowerCase() === cat.toLowerCase();
-
-              return (
+            <div className="flex flex-wrap sm:flex-nowrap gap-3 items-center">
+              {/* Category Dropdown */}
+              <div className="relative flex-1 sm:flex-initial">
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                    isSelected
-                      ? "bg-gray-900 text-white shadow-sm"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                  onClick={() => {
+                    setCategoryFilterOpen((o) => !o);
+                    setSortOpen(false);
+                  }}
+                  className="w-full sm:w-auto flex items-center justify-between gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors shadow-sm"
                 >
-                  <span>{cat}</span>
-                  <span
-                    className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                      isSelected
-                        ? "bg-white/20 text-white"
-                        : "bg-gray-200 text-gray-500"
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="text-gray-500">Category:</span>
+                    <span className="text-gray-900 font-semibold">{selectedCategory}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600 font-semibold">
+                      {categoryCounts[selectedCategory] || 0}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-400 transition-transform ${
+                      categoryFilterOpen ? "rotate-180" : ""
                     }`}
-                  >
-                    {count}
-                  </span>
+                  />
                 </button>
-              );
-            })}
+
+                {categoryFilterOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setCategoryFilterOpen(false)}
+                    />
+                    <div className="absolute right-0 sm:left-0 mt-2 w-56 max-h-72 overflow-y-auto bg-white border border-gray-100 rounded-xl shadow-lg z-20 py-1">
+                      {allCategories.map((cat) => {
+                        const count = categoryCounts[cat] || 0;
+                        const isSelected =
+                          selectedCategory.toLowerCase() === cat.toLowerCase();
+                        return (
+                          <button
+                            key={cat}
+                            onClick={() => {
+                              setSelectedCategory(cat);
+                              setCategoryFilterOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${
+                              isSelected
+                                ? "bg-gray-900 text-white font-medium"
+                                : "text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            <span>{cat}</span>
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                                isSelected
+                                  ? "bg-white/20 text-white"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="relative flex-1 sm:flex-initial">
+                <button
+                  onClick={() => {
+                    setSortOpen((o) => !o);
+                    setCategoryFilterOpen(false);
+                  }}
+                  className="w-full sm:w-auto flex items-center justify-between gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors shadow-sm"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Filter className="w-3.5 h-3.5 text-gray-400" />
+                    <span className="text-gray-500">Sort:</span>
+                    <span className="text-gray-900 font-semibold">{ADMIN_SORT_LABELS[sortBy]}</span>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-400 transition-transform ${
+                      sortOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {sortOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setSortOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-20 overflow-hidden py-1">
+                      {(Object.keys(ADMIN_SORT_LABELS) as AdminSortOption[]).map(
+                        (option) => (
+                          <button
+                            key={option}
+                            onClick={() => {
+                              setSortBy(option);
+                              setSortOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${
+                              sortBy === option
+                                ? "bg-gray-900 text-white font-medium"
+                                : "text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            <span>{ADMIN_SORT_LABELS[option]}</span>
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* List Display */}
@@ -650,6 +687,9 @@ export default function ArtworksManager() {
                       <td className="p-4">
                         <div className="font-semibold text-gray-900">
                           {item.name}
+                          {item.social_post_url && (
+                            <span className="ml-2 text-base" title={item.social_post_url}>🔗</span>
+                          )}
                         </div>
                         {item.overview && (
                           <div className="text-xs text-gray-500 line-clamp-1 max-w-xs mt-0.5">
@@ -743,6 +783,9 @@ export default function ArtworksManager() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 truncate">
                       {item.name}
+                      {item.social_post_url && (
+                        <span className="ml-2 text-base" title={item.social_post_url}>🔗</span>
+                      )}
                     </h3>
                     <div className="flex items-center gap-2 mt-1 mb-2.5">
                       <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium truncate">

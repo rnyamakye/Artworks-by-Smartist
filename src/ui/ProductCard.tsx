@@ -1,5 +1,4 @@
 "use client";
-import { ProductProps } from "../../type";
 import { useState } from "react";
 import {
   Dialog,
@@ -7,9 +6,19 @@ import {
   Transition,
   TransitionChild
 } from "@headlessui/react";
+import { SocialEmbed } from "@/ui/SocialEmbed";
+
+interface ProductItem {
+  _id?: number | string;
+  id?: string;
+  name?: string;
+  images: string[];
+  social_post_url?: string | null;
+  [key: string]: any;
+}
 
 interface Props {
-  item: ProductProps;
+  item: ProductItem;
 }
 
 const ProductCard = ({ item }: Props) => {
@@ -18,7 +27,7 @@ const ProductCard = ({ item }: Props) => {
   const close = () => setIsOpen(false);
 
   return (
-    <div className="rounded-xl p-2 bg-white shadow-sm overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1">
+    <div className="rounded-xl bg-white shadow-sm overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1">
       <div className="w-full h-60 relative group rounded-lg overflow-hidden">
         <img
           onClick={open}
@@ -53,14 +62,11 @@ const ProductCard = ({ item }: Props) => {
                       className="w-full object-cover rounded-lg h-full md:h-[500px] lg:h-[600px]"
                     />
                   </div>
-                  <div className="mt-4">
-                    {/* <Button
-                      className="inline-flex items-center gap-2 rounded-md bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white"
-                      onClick={close}
-                    >
-                      Got it, thanks!
-                    </Button> */}
-                  </div>
+                  {item?.social_post_url && (
+                    <div className="mt-4">
+                      <SocialEmbed url={item.social_post_url} />
+                    </div>
+                  )}
                 </DialogPanel>
               </TransitionChild>
             </div>
