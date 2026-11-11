@@ -36,31 +36,35 @@ export const LeaveTestimonial: React.FC<LeaveTestimonialProps> = ({
 
     setLoading(true);
 
+    const clientGeneratedId =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `t_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
     const newTestimonialData = {
+      id: clientGeneratedId,
       name: formData.name.trim(),
+      author_name: formData.name.trim(),
       role: formData.role.trim() || null,
       text: formData.text.trim(),
+      content: formData.text.trim(),
       social_post_url: formData.social_post_url.trim() || null,
       status: "pending",
+      approved: false,
       created_at: new Date().toISOString(),
     };
 
     try {
-      let createdTestimonial = newTestimonialData;
-
       // Attempt to save to Supabase
       if (supabase) {
-        const { data, error } = await supabase
+        // Do not chain .select() here because unapproved/pending testimonials
+        // are restricted from public SELECT by RLS until admin approval
+        const { error } = await supabase
           .from("testimonials")
-          .insert([newTestimonialData])
-          .select();
+          .insert([newTestimonialData]);
 
         if (error) {
           throw error;
-        }
-
-        if (data && data.length > 0) {
-          createdTestimonial = data[0];
         }
       }
 
@@ -71,7 +75,7 @@ export const LeaveTestimonial: React.FC<LeaveTestimonialProps> = ({
 
       // Notify parent component to display it immediately with gray text
       if (onTestimonialSubmitted) {
-        onTestimonialSubmitted(createdTestimonial);
+        onTestimonialSubmitted(newTestimonialData);
       }
 
       // Close modal and reset form
@@ -95,7 +99,7 @@ export const LeaveTestimonial: React.FC<LeaveTestimonialProps> = ({
         className="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 text-white rounded-full font-medium shadow-sm hover:bg-black transition-all duration-300 hover:shadow-md text-sm"
       >
         <MessageSquare className="w-4 h-4" />
-        <span>Leave a Testimonial</span>
+        <span>Leave a Review</span>
       </button>
 
       {isOpen && (

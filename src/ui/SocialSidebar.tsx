@@ -94,11 +94,10 @@ export const SocialSidebar = () => {
     >
       {/* Expanded Links Menu */}
       <div
-        className={`flex flex-col items-end gap-3 mb-3 transition-all duration-300 ease-out origin-bottom ${
-          isOpen
-            ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
-            : "opacity-0 translate-y-6 scale-90 pointer-events-none"
-        }`}
+        className={`flex flex-col items-end gap-3 mb-3 transition-all duration-300 ease-out origin-bottom ${isOpen
+          ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
+          : "opacity-0 translate-y-6 scale-90 pointer-events-none"
+          }`}
         aria-hidden={!isOpen}
       >
         {socialLinks.map((item, index) => (
@@ -108,9 +107,8 @@ export const SocialSidebar = () => {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={item.label}
-            className={`flex items-center gap-2.5 group transition-all duration-200 ${
-              isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-            }`}
+            className={`flex items-center gap-2.5 group transition-all duration-200 ${isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+              }`}
             style={{
               transitionDelay: isOpen ? `${(socialLinks.length - 1 - index) * 40}ms` : "0ms",
             }}
@@ -134,17 +132,16 @@ export const SocialSidebar = () => {
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label={isOpen ? "Close social media menu" : "Open WhatsApp and social links"}
-        className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-emerald-400/30 ${
-          isOpen
-            ? "bg-gray-900 text-white shadow-gray-900/30 rotate-90"
-            : "bg-[#25D366] text-white shadow-emerald-500/30 hover:bg-[#20bd5a]"
-        }`}
+        className={`relative w-10 h-10 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-emerald-400/30 ${isOpen
+          ? "bg-gray-900 text-white shadow-gray-900/30 rotate-90"
+          : "bg-[#25D366] text-white shadow-emerald-500/30 hover:bg-[#20bd5a]"
+          }`}
       >
         {isOpen ? (
-          <IoClose className="w-7 h-7" />
+          <IoClose className="w-5 h-5" />
         ) : (
           <>
-            <IoLogoWhatsapp className="w-8 h-8" />
+            <IoLogoWhatsapp className="w-5 h-5" />
             {/* Subtle attention indicator ping badge */}
             <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />

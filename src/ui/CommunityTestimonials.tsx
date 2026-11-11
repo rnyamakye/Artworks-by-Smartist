@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/carousel";
 import { LeaveTestimonial } from "@/ui/LeaveTestimonial";
 import { SocialEmbed } from "@/ui/SocialEmbed";
+import { supabase } from "@/lib/supabase";
 import {
   Clock,
   CheckCircle2,
@@ -84,6 +85,47 @@ export const CommunityTestimonials: React.FC<CommunityTestimonialsProps> = ({
     }
   }, []);
 
+  // Fetch fresh live testimonials from Supabase client-side
+  useEffect(() => {
+    let isMounted = true;
+    const fetchFresh = async () => {
+      try {
+        if (!supabase) return;
+        const { data, error } = await supabase
+          .from("testimonials")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(12);
+
+        if (!error && data && data.length > 0 && isMounted) {
+          const formatted = data.map((item: any) => ({
+            id: item.id || item._id,
+            name: item.name || item.author_name || "Collector",
+            role: item.role || item.author_email || "Art Collector",
+            text: item.text || item.content || "",
+            status: item.status || (item.approved ? "approved" : "pending"),
+            created_at: item.created_at,
+            social_post_url: item.social_post_url || null,
+          }));
+
+          setTestimonials((prev) => {
+            const dbIds = new Set(formatted.map((d: any) => d.id || d._id));
+            const stillPending = prev.filter(
+              (p) => p.status === "pending" && !dbIds.has(p.id || p._id)
+            );
+            return [...stillPending, ...formatted];
+          });
+        }
+      } catch {
+        // Silently preserve current testimonials
+      }
+    };
+    fetchFresh();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Embla carousel synchronization
   useEffect(() => {
     if (!api) return;
@@ -107,6 +149,27 @@ export const CommunityTestimonials: React.FC<CommunityTestimonialsProps> = ({
       api.off("select", onSelect);
     };
   }, [api, testimonials.length]);
+
+  const handleNext = () => {
+    if (!api) return;
+    if (api.canScrollNext()) {
+      api.scrollNext();
+    } else {
+      // Loop smoothly back to the first slide
+      api.scrollTo(0);
+    }
+  };
+
+  const handlePrev = () => {
+    if (!api) return;
+    if (api.canScrollPrev()) {
+      api.scrollPrev();
+    } else {
+      // Loop smoothly to the last slide
+      const snaps = api.scrollSnapList();
+      api.scrollTo(Math.max(0, snaps.length - 1));
+    }
+  };
 
   // When a user leaves a new review, immediately add it to the list in pending state and scroll to it
   const handleTestimonialSubmitted = (newTestimonial: TestimonialItem) => {
@@ -161,7 +224,6 @@ export const CommunityTestimonials: React.FC<CommunityTestimonialsProps> = ({
             setApi={setApi}
             opts={{
               align: "start",
-              loop: testimonials.length > 2,
             }}
             plugins={[autoplayPlugin.current]}
             className="w-full"
@@ -178,11 +240,10 @@ export const CommunityTestimonials: React.FC<CommunityTestimonialsProps> = ({
                     className="pl-4 md:pl-6 basis-full sm:basis-1/2 lg:basis-1/3 flex"
                   >
                     <div
-                      className={`w-full rounded-2xl p-6 flex flex-col justify-between transition-all ${
-                        isPending
-                          ? "bg-gray-50/70 border border-dashed border-gray-300 shadow-2xs"
-                          : "bg-white rounded-2xl border border-gray-200 shadow-xs hover:shadow-md"
-                      }`}
+                      className={`w-full rounded-2xl p-6 flex flex-col justify-between transition-all ${isPending
+                        ? "bg-gray-50/70 border border-dashed border-gray-300 shadow-2xs"
+                        : "bg-white rounded-2xl border border-gray-200 shadow-xs hover:shadow-md"
+                        }`}
                     >
                       <div className="w-full">
                         {/* Status Indicator Badge */}
@@ -209,11 +270,10 @@ export const CommunityTestimonials: React.FC<CommunityTestimonialsProps> = ({
                         {/* Author Header */}
                         <div className="flex items-center mb-3">
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 font-semibold text-sm shrink-0 ${
-                              isPending
-                                ? "bg-gray-200 text-gray-400"
-                                : "bg-gray-900 text-white"
-                            }`}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 font-semibold text-sm shrink-0 ${isPending
+                              ? "bg-gray-200 text-gray-400"
+                              : "bg-gray-900 text-white"
+                              }`}
                           >
                             {t.name ? (
                               t.name.charAt(0).toUpperCase()
@@ -224,9 +284,8 @@ export const CommunityTestimonials: React.FC<CommunityTestimonialsProps> = ({
                           <div className="min-w-0">
                             {/* Name in gray if pending, dark if approved */}
                             <div
-                              className={`font-semibold text-sm sm:text-base truncate ${
-                                isPending ? "text-gray-500" : "text-gray-900"
-                              }`}
+                              className={`font-semibold text-sm sm:text-base truncate ${isPending ? "text-gray-500" : "text-gray-900"
+                                }`}
                             >
                               {t.name}
                             </div>
@@ -239,11 +298,10 @@ export const CommunityTestimonials: React.FC<CommunityTestimonialsProps> = ({
 
                         {/* Testimonial Quote: GRAY TEXT when pending review as requested */}
                         <p
-                          className={`text-sm sm:text-base mt-2 leading-relaxed ${
-                            isPending
-                              ? "text-gray-400 italic"
-                              : "text-gray-700 font-normal"
-                          }`}
+                          className={`text-sm sm:text-base mt-2 leading-relaxed ${isPending
+                            ? "text-gray-400 italic"
+                            : "text-gray-700 font-normal"
+                            }`}
                         >
                           &ldquo;{t.text}&rdquo;
                         </p>
@@ -280,11 +338,10 @@ export const CommunityTestimonials: React.FC<CommunityTestimonialsProps> = ({
                     key={idx}
                     type="button"
                     onClick={() => api?.scrollTo(idx)}
-                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                      idx === selectedIndex
-                        ? "w-8 bg-gray-900"
-                        : "w-2 bg-gray-300 hover:bg-gray-400"
-                    }`}
+                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${idx === selectedIndex
+                      ? "w-8 bg-gray-900"
+                      : "w-2 bg-gray-300 hover:bg-gray-400"
+                      }`}
                     aria-label={`Go to slide ${idx + 1}`}
                   />
                 ))}
@@ -293,33 +350,29 @@ export const CommunityTestimonials: React.FC<CommunityTestimonialsProps> = ({
 
             {/* Bottom Actions Row: Previous, Leave a Testimonial, Next */}
             <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
-              {testimonials.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => api?.scrollPrev()}
-                  disabled={!canScrollPrev}
-                  className="w-11 h-11 rounded-full border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-gray-700 transition-all shadow-xs hover:shadow-sm cursor-pointer"
-                  aria-label="Previous testimonials"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handlePrev}
+                disabled={scrollSnaps.length <= 1}
+                className="w-11 h-11 rounded-full border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-gray-700 transition-all shadow-xs hover:shadow-sm cursor-pointer"
+                aria-label="Previous testimonials"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
 
               <LeaveTestimonial
                 onTestimonialSubmitted={handleTestimonialSubmitted}
               />
 
-              {testimonials.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => api?.scrollNext()}
-                  disabled={!canScrollNext}
-                  className="w-11 h-11 rounded-full border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-gray-700 transition-all shadow-xs hover:shadow-sm cursor-pointer"
-                  aria-label="Next testimonials"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={scrollSnaps.length <= 1}
+                className="w-11 h-11 rounded-full border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-gray-700 transition-all shadow-xs hover:shadow-sm cursor-pointer"
+                aria-label="Next testimonials"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>

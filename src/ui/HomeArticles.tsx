@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Calendar } from "lucide-react";
 import { SocialEmbed } from "@/ui/SocialEmbed";
+import { supabase } from "@/lib/supabase";
+import { formatBlogDate } from "@/constants/fallbackBlogs";
 
 export interface BlogItem {
   id?: string | number;
@@ -20,7 +22,47 @@ interface HomeArticlesProps {
 }
 
 export const HomeArticles: React.FC<HomeArticlesProps> = ({ articles }) => {
-  if (!articles || articles.length === 0) {
+  const [articleList, setArticleList] = useState<BlogItem[]>(articles || []);
+
+  useEffect(() => {
+    setArticleList(articles || []);
+  }, [articles]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchFresh = async () => {
+      try {
+        if (!supabase) return;
+        const { data, error } = await supabase
+          .from("blogs")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        if (!error && data && data.length > 0 && isMounted) {
+          setArticleList(
+            data.map((item: any) => ({
+              id: item.id || item._id,
+              image: item.image,
+              src: item.image,
+              title: item.title || item.description || "Featured Artwork & Story",
+              description: item.description,
+              date: formatBlogDate(item.created_at),
+              social_post_url: item.social_post_url || "",
+            }))
+          );
+        }
+      } catch {
+        // Silently preserve current articles
+      }
+    };
+    fetchFresh();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (!articleList || articleList.length === 0) {
     return null;
   }
 
@@ -28,7 +70,7 @@ export const HomeArticles: React.FC<HomeArticlesProps> = ({ articles }) => {
     <>
       {/* Blog Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-        {articles.map((article, idx) => {
+        {articleList.map((article, idx) => {
           const displayImage = article.image || article.src;
           const blogHref = article.id ? `/blog/${article.id}` : "/blog";
 

@@ -53,15 +53,25 @@ export default function AdminTestimonials() {
       toast.error("Failed to load testimonials");
       console.error(error);
     } else {
-      setTestimonials(data || []);
+      const normalized = (data || []).map((item: any) => ({
+        id: item.id || item._id,
+        name: item.name || item.author_name || "Anonymous",
+        role: item.role || item.author_email || null,
+        text: item.text || item.content || "",
+        status: item.status || (item.approved ? "approved" : "pending"),
+        created_at: item.created_at,
+        social_post_url: item.social_post_url || null,
+      }));
+      setTestimonials(normalized);
     }
     setLoading(false);
   };
 
   const handleUpdateStatus = async (id: string, newStatus: "approved" | "pending") => {
+    const isApproved = newStatus === "approved";
     const { error } = await supabase
       .from("testimonials")
-      .update({ status: newStatus })
+      .update({ status: newStatus, approved: isApproved })
       .eq("id", id);
 
     if (error) {

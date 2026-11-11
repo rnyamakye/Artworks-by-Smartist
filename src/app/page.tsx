@@ -29,6 +29,7 @@ export default async function Home() {
 
   try {
     const fetchArticles = async () => {
+      if (!supabase) return [];
       const { data } = await supabase
         .from("blogs")
         .select("*")
@@ -38,6 +39,7 @@ export default async function Home() {
     };
 
     const fetchTestimonials = async () => {
+      if (!supabase) return [];
       const { data } = await supabase
         .from("testimonials")
         .select("*")
@@ -46,19 +48,22 @@ export default async function Home() {
       return data || [];
     };
 
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Timeout")), 2500)
+    // Graceful, non-rejecting timeout (800ms): resolves null without throwing
+    const timeoutPromise = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), 800)
     );
 
-    const [articlesRes, testimonialsRes] = await Promise.race([
-      Promise.all([fetchArticles(), fetchTestimonials()]),
-      timeout.then(() => [[], []] as [any[], any[]]),
+    const fetchPromise = Promise.all([
+      fetchArticles().catch(() => []),
+      fetchTestimonials().catch(() => []),
     ]);
 
-    rawArticles = articlesRes || [];
-    rawTestimonials = testimonialsRes || [];
-  } catch (err) {
-    console.warn("Could not fetch latest blogs/testimonials for homepage:", err);
+    const result = await Promise.race([fetchPromise, timeoutPromise]);
+    if (result) {
+      [rawArticles, rawTestimonials] = result;
+    }
+  } catch {
+    // Gracefully proceed with fallback content
   }
 
   const dbArticles = (rawArticles || []).map((item: any) => ({
@@ -98,12 +103,36 @@ export default async function Home() {
       status: "approved",
       created_at: "2026-10-28T09:15:00Z",
     },
+    {
+      id: "t004",
+      name: "David Vance",
+      role: "Architectural Designer",
+      text: "The perspective and shading work in these graphite pieces is sensational. It adds such a timeless and sophisticated atmosphere to our gallery.",
+      status: "approved",
+      created_at: "2026-11-01T10:00:00Z",
+    },
+    {
+      id: "t005",
+      name: "Maya Lin",
+      role: "Art Collector",
+      text: "Every fine stroke captures genuine emotion. Ordering was seamless, and the commissioned artwork arrived securely packaged and even more stunning in person.",
+      status: "approved",
+      created_at: "2026-11-04T16:20:00Z",
+    },
   ];
 
+  const dbTestimonials = (rawTestimonials || []).map((item: any) => ({
+    id: item.id || item._id,
+    name: item.name || item.author_name || "Collector",
+    role: item.role || item.author_email || "Art Collector",
+    text: item.text || item.content || "",
+    status: item.status || (item.approved ? "approved" : "pending"),
+    created_at: item.created_at,
+    social_post_url: item.social_post_url || null,
+  }));
+
   const testimonials =
-    rawTestimonials && rawTestimonials.length > 0
-      ? rawTestimonials
-      : fallbackTestimonials;
+    dbTestimonials.length > 0 ? dbTestimonials : fallbackTestimonials;
 
   return (
     <div>

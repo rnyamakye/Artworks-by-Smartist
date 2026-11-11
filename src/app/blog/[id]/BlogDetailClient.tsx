@@ -274,7 +274,7 @@ export default function BlogDetailClient({ id }: BlogDetailClientProps) {
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-8">
             More From Our Blog
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
             {relatedPosts.map((related) => (
               <Link
                 key={related.id}
