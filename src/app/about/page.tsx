@@ -1,5 +1,6 @@
 import Container from "@/ui/Container";
 import { supabase } from "@/lib/supabase";
+import { sanitize } from "@/lib/sanitize";
 
 export const revalidate = 0; // Disable caching for dynamic content
 
@@ -45,7 +46,7 @@ export default async function About() {
               {aboutData?.content ? (
                 <div 
                   className="text-gray-600 mb-6 space-y-4 whitespace-pre-wrap"
-                  dangerouslySetInnerHTML={{ __html: aboutData.content }}
+                  dangerouslySetInnerHTML={{ __html: sanitize(aboutData.content) }}
                 />
               ) : (
                 <>
@@ -239,7 +240,7 @@ export default async function About() {
               </p>
               <ul className="space-y-4">
                 {achievementsData && achievementsData.length > 0 ? (
-                  achievementsData.map((ach) => (
+                  achievementsData.map((ach: any) => (
                     <li key={ach.id} className="flex items-start gap-2">
                       <span className="mt-1">
                         {/* Generic Award Icon */}

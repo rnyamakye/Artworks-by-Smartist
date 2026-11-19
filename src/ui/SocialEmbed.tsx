@@ -35,6 +35,16 @@ function loadScript(src: string, id: string): void {
 export function SocialEmbed({ url }: SocialEmbedProps) {
   if (!url) return null;
 
+  let parsedUrl: URL | null = null;
+  try {
+    parsedUrl = new URL(url);
+  } catch {
+    return null;
+  }
+
+  const hostname = parsedUrl.hostname.toLowerCase();
+  const isHost = (domain: string) => hostname === domain || hostname.endsWith(`.${domain}`);
+
   // ── YouTube ──────────────────────────────────────────────────────────────
   const ytId = getYouTubeVideoId(url);
   if (ytId) {
@@ -52,22 +62,22 @@ export function SocialEmbed({ url }: SocialEmbedProps) {
   }
 
   // ── TikTok ───────────────────────────────────────────────────────────────
-  if (url.includes("tiktok.com")) {
+  if (isHost("tiktok.com")) {
     return <TikTokEmbed url={url} />;
   }
 
   // ── Instagram ────────────────────────────────────────────────────────────
-  if (url.includes("instagram.com/p/") || url.includes("instagram.com/reel/")) {
+  if (isHost("instagram.com") && (parsedUrl.pathname.includes("/p/") || parsedUrl.pathname.includes("/reel/"))) {
     return <InstagramEmbed url={url} />;
   }
 
   // ── Twitter / X ──────────────────────────────────────────────────────────
-  if (url.includes("twitter.com/") || url.includes("x.com/")) {
+  if (isHost("twitter.com") || isHost("x.com")) {
     return <TwitterEmbed url={url} />;
   }
 
   // ── Facebook ─────────────────────────────────────────────────────────────
-  if (url.includes("facebook.com/")) {
+  if (isHost("facebook.com")) {
     return <FacebookEmbed url={url} />;
   }
 

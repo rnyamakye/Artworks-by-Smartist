@@ -17,22 +17,26 @@ export interface CategoryProps {
 }
 
 export interface ProductProps {
-  _id: number;
-  _base: string;
-  reviews: number;
-  rating: number;
-  quantity: number;
-  overView: string;
+  id?: string | number;
+  _id?: number | string;
+  _base?: string;
+  reviews?: number;
+  rating?: number;
+  quantity?: number;
+  overView?: string;
+  overview?: string;
   name: string;
-  isStock: boolean;
-  isNew: boolean;
-  images: [string];
-  discountedPrice: number;
-  regularPrice: number;
-  description: string;
-  colors: [string];
-  category: string;
-  brand: string;
+  isStock?: boolean;
+  is_stock?: boolean;
+  isNew?: boolean;
+  images: string[];
+  discountedPrice?: number;
+  regularPrice?: number;
+  regular_price?: number;
+  description?: string;
+  colors?: string[];
+  category?: string;
+  brand?: string;
 }
 
 export interface BlogProps {

@@ -1,31 +1,37 @@
 "use client";
 import { useState } from "react";
+import { siteConfig } from "@/config";
 
 const faqData = [
   {
-    question: "How do I commission a pencil artwork?",
+    question: "How do I commission a custom portrait or artwork?",
     answer:
-      "You can commission a pencil artwork by contacting us through our contact page with details about your desired piece. We'll discuss your requirements, timeline, and pricing.",
+      "You can request a custom commission through our Commission page or via WhatsApp. Simply share your reference photos, preferred dimensions, and deadline to receive a personalized quote.",
   },
   {
-    question: "What materials do you recommend for beginners?",
+    question: "What materials and paper do you use?",
     answer:
-      "For beginners, we recommend starting with a set of HB, 2B, and 4B pencils, a good eraser, and smooth sketch paper. These basics help you practice shading and line work effectively.",
+      "Every piece is hand-drawn using artist-grade graphite and charcoal pencils on heavyweight, acid-free archival Strathmore Bristol paper, sealed with UV-protective fixative.",
   },
   {
-    question: "How can I submit my artwork for a feature?",
+    question: "How long does a commissioned drawing take?",
     answer:
-      "Submit your artwork by emailing us at submissions@example.com or tagging us on social media with #OurArtFeature. We review submissions monthly and showcase selected pieces on our blog.",
+      "Depending on the subject complexity and size, commissioned portraits typically take between 1 to 3 weeks. You will receive progress updates and photos along the way.",
   },
   {
-    question: "Do you offer online classes?",
+    question: "How is the finished artwork packaged and delivered?",
     answer:
-      "Yes! We offer live and recorded online classes covering various pencil techniques. Check our Tutorials page for current offerings and schedules.",
+      "Artwork is carefully layered with glassine paper, secured between rigid backing boards, and sealed in weatherproof packaging to guarantee safe delivery.",
   },
   {
-    question: "How do I contact customer support?",
+    question: "Where can I watch your drawing tutorials?",
     answer:
-      "You can reach our customer support team via the Contact page or by emailing support@example.com. We aim to respond within 24 hours.",
+      "Explore free step-by-step drawing lessons and speed-drawings on our Tutorials page, and follow our daily creative process on TikTok and Instagram.",
+  },
+  {
+    question: "How can I get in touch directly?",
+    answer:
+      `You can reach out anytime via our Contact page, message us on WhatsApp (${siteConfig.whatsappNumber}), or email us directly at ${siteConfig.contactEmail}.`,
   },
 ];
 

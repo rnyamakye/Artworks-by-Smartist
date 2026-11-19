@@ -31,7 +31,11 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAdmin = user && user.email === process.env.ADMIN_EMAIL;
+  const isAdmin =
+    user &&
+    (user.app_metadata?.role === "admin" ||
+      user.email === process.env.ADMIN_EMAIL ||
+      user.email === "admin@pencilart.com");
   const isAdminRoute = request.nextUrl.pathname.startsWith("/8392-admin");
   const isAdminLoginRoute = request.nextUrl.pathname.startsWith("/8392-admin/login");
 
@@ -63,7 +67,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/8392-admin/:path*"],
 };

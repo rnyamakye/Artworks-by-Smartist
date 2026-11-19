@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { sanitize } from "@/lib/sanitize";
 
 export const revalidate = 0;
 
@@ -14,7 +15,7 @@ export default async function TermsOfService() {
       {data?.content ? (
         <div 
           className="prose prose-gray max-w-none text-gray-700 leading-relaxed text-base md:text-lg"
-          dangerouslySetInnerHTML={{ __html: data.content }}
+          dangerouslySetInnerHTML={{ __html: sanitize(data.content) }}
         />
       ) : (
         <div className="text-gray-700 leading-relaxed text-base md:text-lg">

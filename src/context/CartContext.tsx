@@ -38,20 +38,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem("smartist-cart", JSON.stringify(cart));
   }, [cart]);
 
+  const getItemId = (item: ProductProps) => String(item.id || item._id || "");
+
   const addToCart = (product: ProductProps) => {
+    const prodId = getItemId(product);
     setCart((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const existing = prev.find((item) => getItemId(item) === prodId);
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, cartQuantity: item.cartQuantity + 1 } : item
+          getItemId(item) === prodId ? { ...item, cartQuantity: item.cartQuantity + 1 } : item
         );
       }
-      return [...prev, { ...product, cartQuantity: 1 }];
+      return [...prev, { ...product, id: prodId, cartQuantity: 1 }];
     });
   };
 
   const removeFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((item) => item.id !== productId));
+    setCart((prev) => prev.filter((item) => getItemId(item) !== productId));
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -60,7 +63,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     setCart((prev) =>
-      prev.map((item) => (item.id === productId ? { ...item, cartQuantity: quantity } : item))
+      prev.map((item) => (getItemId(item) === productId ? { ...item, cartQuantity: quantity } : item))
     );
   };
 
@@ -68,7 +71,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCart([]);
   };
 
-  const cartTotal = cart.reduce((total, item) => total + (item.regular_price || 0) * item.cartQuantity, 0);
+  const cartTotal = cart.reduce(
+    (total, item) => total + (item.regular_price ?? item.regularPrice ?? 0) * item.cartQuantity,
+    0
+  );
   const itemCount = cart.reduce((count, item) => count + item.cartQuantity, 0);
 
   return (

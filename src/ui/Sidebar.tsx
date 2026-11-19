@@ -10,6 +10,7 @@ import {
 import { SiTiktok } from "react-icons/si";
 import { LogOut, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { siteConfig } from "@/config";
 
 type SidebarProps = {
   isOpen: boolean; // Controls whether sidebar is visible
@@ -100,7 +101,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             >
               Edit Profile
             </Link>
-            {user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
+            {(user.app_metadata?.role === "admin" || user.email === siteConfig.adminEmail) && (
               <Link
                 href="/8392-admin"
                 onClick={onClose}
@@ -123,7 +124,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             {/* Social Icons */}
             <div className="flex gap-4 mt-6 items-center">
               <a
-                href="https://wa.me/1234567890"
+                href={siteConfig.whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"

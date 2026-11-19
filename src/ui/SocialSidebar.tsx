@@ -9,6 +9,7 @@ import {
 } from "react-icons/io5";
 import { SiTiktok } from "react-icons/si";
 import { usePathname } from "next/navigation";
+import { siteConfig } from "@/config";
 
 export const SocialSidebar = () => {
   const pathname = usePathname();
@@ -55,7 +56,7 @@ export const SocialSidebar = () => {
   const socialLinks = [
     {
       name: "WhatsApp",
-      href: "https://wa.me/+233547348350",
+      href: siteConfig.whatsappUrl,
       icon: <IoLogoWhatsapp className="w-5 h-5 text-emerald-500" />,
       hoverBg: "hover:bg-emerald-50",
       borderHover: "hover:border-emerald-300",
@@ -63,7 +64,7 @@ export const SocialSidebar = () => {
     },
     {
       name: "TikTok",
-      href: "https://www.tiktok.com/@smartist88?_t=ZM-8wXnYAmrfHi&_r=1",
+      href: siteConfig.tiktokUrl,
       icon: <SiTiktok className="w-4 h-4 text-gray-900" />,
       hoverBg: "hover:bg-gray-100",
       borderHover: "hover:border-gray-400",
@@ -71,7 +72,7 @@ export const SocialSidebar = () => {
     },
     {
       name: "Instagram",
-      href: "https://www.instagram.com/an_mmanuel?igsh=MXViNWhzajhldTczYg%3D%3D&utm_source=qr",
+      href: siteConfig.instagramUrl,
       icon: <IoLogoInstagram className="w-5 h-5 text-pink-600" />,
       hoverBg: "hover:bg-pink-50",
       borderHover: "hover:border-pink-300",
@@ -79,7 +80,7 @@ export const SocialSidebar = () => {
     },
     {
       name: "Email",
-      href: "mailto:smartmasterpiece7@gmail.com",
+      href: `mailto:${siteConfig.contactEmail}`,
       icon: <IoMailSharp className="w-5 h-5 text-gray-700" />,
       hoverBg: "hover:bg-gray-100",
       borderHover: "hover:border-gray-400",

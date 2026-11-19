@@ -15,6 +15,15 @@ const ContactForm: React.FC = () => {
     setIsSubmitting(true);
 
     const formData = new FormData(form.current);
+    const botCheck = formData.get("user_website") as string;
+    if (botCheck) {
+      // Honeypot caught bot submission - exit silently
+      toast.success("Your message has been sent successfully!");
+      form.current?.reset();
+      setIsSubmitting(false);
+      return;
+    }
+
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const message = formData.get("message") as string;
@@ -49,6 +58,18 @@ const ContactForm: React.FC = () => {
       onSubmit={sendEmail}
       className="space-y-5"
     >
+      {/* Honeypot field for bot spam prevention */}
+      <div className="hidden" aria-hidden="true" style={{ display: "none" }}>
+        <label htmlFor="user_website">Website</label>
+        <input
+          type="text"
+          id="user_website"
+          name="user_website"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
           <label className="block text-gray-700 font-medium text-sm mb-1" htmlFor="name">

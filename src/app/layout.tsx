@@ -17,8 +17,37 @@ const mulish = Mulish({
 });
 
 export const metadata: Metadata = {
-  title: "Artworks",
-  description: "Artwork Portfolio",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://artworksbysmartist.com"),
+  title: {
+    default: "Artworks by Smartist | Fine Pencil Art & Custom Portraits",
+    template: "%s | Artworks by Smartist",
+  },
+  description:
+    "Explore hyper-realistic fine pencil artwork, commissioned custom portraits, and pencil drawing tutorials by Smartist.",
+  openGraph: {
+    title: "Artworks by Smartist | Fine Pencil Art & Custom Portraits",
+    description:
+      "Explore hyper-realistic fine pencil artwork, commissioned custom portraits, and pencil drawing tutorials by Smartist.",
+    url: "https://artworksbysmartist.com",
+    siteName: "Artworks by Smartist",
+    images: [
+      {
+        url: "/award-image.JPG",
+        width: 1200,
+        height: 630,
+        alt: "Artworks by Smartist - Fine Pencil Art",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Artworks by Smartist | Fine Pencil Art",
+    description:
+      "Hyper-realistic fine pencil drawings, commissioned portraits, and drawing tutorials.",
+    images: ["/award-image.JPG"],
+  },
 };
 
 export default function RootLayout({

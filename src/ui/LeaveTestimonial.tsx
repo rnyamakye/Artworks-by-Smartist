@@ -19,10 +19,20 @@ export const LeaveTestimonial: React.FC<LeaveTestimonialProps> = ({
     role: "",
     text: "",
     social_post_url: "",
+    website: "", // Honeypot field for bot detection
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot check: If bots fill out hidden field, exit gracefully without inserting
+    if (formData.website) {
+      toast.success(
+        "Testimonial submitted successfully! It is now pending admin approval."
+      );
+      setIsOpen(false);
+      return;
+    }
 
     if (!formData.name.trim()) {
       toast.error("Please enter your name.");
@@ -80,7 +90,7 @@ export const LeaveTestimonial: React.FC<LeaveTestimonialProps> = ({
 
       // Close modal and reset form
       setIsOpen(false);
-      setFormData({ name: "", role: "", text: "", social_post_url: "" });
+      setFormData({ name: "", role: "", text: "", social_post_url: "", website: "" });
     } catch (err: any) {
       console.error("Testimonial submission failed:", err);
       // Failure toast
@@ -131,6 +141,22 @@ export const LeaveTestimonial: React.FC<LeaveTestimonialProps> = ({
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
+              {/* Honeypot field hidden from real users */}
+              <div className="hidden" aria-hidden="true" style={{ display: "none" }}>
+                <label htmlFor="website">Website</label>
+                <input
+                  type="text"
+                  id="website"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={formData.website}
+                  onChange={(e) =>
+                    setFormData({ ...formData, website: e.target.value })
+                  }
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Your Name *
