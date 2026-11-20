@@ -20,7 +20,11 @@ export const NewsletterForm = () => {
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || trimmedEmail.length < 4 || trimmedEmail.length > 255) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
 
     setStatus("loading");
 
@@ -29,7 +33,7 @@ export const NewsletterForm = () => {
       const { data: existingSubscriber } = await supabase
         .from("newsletter_subscribers")
         .select("id")
-        .eq("email", email)
+        .eq("email", trimmedEmail)
         .single();
 
       if (existingSubscriber) {
@@ -40,7 +44,7 @@ export const NewsletterForm = () => {
 
       const { error: insertError } = await supabase
         .from("newsletter_subscribers")
-        .insert([{ email }]);
+        .insert([{ email: trimmedEmail }]);
 
       if (insertError) {
         if (insertError.code === "23505") {
@@ -80,6 +84,7 @@ export const NewsletterForm = () => {
         <input
           type="email"
           required
+          maxLength={255}
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}

@@ -17,17 +17,6 @@ DROP POLICY IF EXISTS "Admins can view admins" ON public.admins;
 CREATE POLICY "Admins can view admins" ON public.admins
   FOR SELECT USING (auth.uid() = id);
 
--- Insert existing admin user from auth.users if exists
-INSERT INTO public.admins (id, email)
-SELECT id, email FROM auth.users
-WHERE email = 'admin@pencilart.com'
-ON CONFLICT (id) DO NOTHING;
-
--- Also set app_metadata->>'role' = 'admin' for the admin user
-UPDATE auth.users
-SET raw_app_meta_data = raw_app_meta_data || '{"role": "admin"}'::jsonb
-WHERE email = 'admin@pencilart.com';
-
 -- 2. Define secure is_admin() function
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS boolean AS $$
@@ -47,11 +36,6 @@ BEGIN
     SELECT 1 FROM public.admins
     WHERE id = auth.uid() OR email = (auth.jwt() ->> 'email')
   ) THEN
-    RETURN true;
-  END IF;
-
-  -- Fallback check for admin email in JWT
-  IF (coalesce(auth.jwt() ->> 'email', '') = 'admin@pencilart.com') THEN
     RETURN true;
   END IF;
 
@@ -182,38 +166,111 @@ CREATE TRIGGER trigger_force_pending_testimonial
 BEFORE INSERT ON public.testimonials
 FOR EACH ROW EXECUTE FUNCTION force_pending_testimonial();
 
--- 10. Contact Messages RLS
+-- 10. Contact Messages RLS with Length & Status Constraints
 ALTER TABLE IF EXISTS public.contact_messages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Anyone can send contact messages" ON public.contact_messages;
 DROP POLICY IF EXISTS "Admins can manage contact messages" ON public.contact_messages;
 
 CREATE POLICY "Anyone can send contact messages" ON public.contact_messages
   FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    coalesce(status, 'unread') = 'unread' AND
+    length(name) >= 1 AND length(name) <= 100 AND
+    length(email) >= 4 AND length(email) <= 255 AND
+    length(message) >= 1 AND length(message) <= 5000
+  );
 
 CREATE POLICY "Admins can manage contact messages" ON public.contact_messages
   FOR ALL
   USING (public.is_admin())
   WITH CHECK (public.is_admin());
 
--- 11. Newsletter Subscribers RLS
+-- Enforce unread status on insert for non-admins
+CREATE OR REPLACE FUNCTION force_unread_contact_message()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NOT public.is_admin() THEN
+    NEW.status := 'unread';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_force_unread_contact_message ON public.contact_messages;
+CREATE TRIGGER trigger_force_unread_contact_message
+BEFORE INSERT ON public.contact_messages
+FOR EACH ROW EXECUTE FUNCTION force_unread_contact_message();
+
+-- 11. Newsletter Subscribers RLS with Length Constraints
 ALTER TABLE IF EXISTS public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Anyone can subscribe" ON public.newsletter_subscribers;
 DROP POLICY IF EXISTS "Admins can manage subscribers" ON public.newsletter_subscribers;
 
 CREATE POLICY "Anyone can subscribe" ON public.newsletter_subscribers
   FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    length(email) >= 4 AND length(email) <= 255
+  );
 
 CREATE POLICY "Admins can manage subscribers" ON public.newsletter_subscribers
   FOR ALL
   USING (public.is_admin())
   WITH CHECK (public.is_admin());
 
--- 12. Storage Objects (Images Bucket) RLS
+-- 12. Commissions Table RLS & Admin Policies
+ALTER TABLE IF EXISTS public.commissions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can manage commissions" ON public.commissions;
+DROP POLICY IF EXISTS "Anyone can submit a commission" ON public.commissions;
+DROP POLICY IF EXISTS "Users can view own commissions" ON public.commissions;
+
+CREATE POLICY "Anyone can submit a commission" ON public.commissions
+  FOR INSERT
+  WITH CHECK (
+    coalesce(status, 'pending') = 'pending' AND
+    length(customer_name) >= 1 AND length(customer_name) <= 100 AND
+    length(customer_email) >= 4 AND length(customer_email) <= 255 AND
+    (description IS NULL OR length(description) <= 5000)
+  );
+
+CREATE POLICY "Users can view own commissions" ON public.commissions
+  FOR SELECT
+  USING (auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Admins can manage commissions" ON public.commissions
+  FOR ALL
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- Enforce pending status on insert for non-admins
+CREATE OR REPLACE FUNCTION force_pending_commission()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NOT public.is_admin() THEN
+    NEW.status := 'pending';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_force_pending_commission ON public.commissions;
+CREATE TRIGGER trigger_force_pending_commission
+BEFORE INSERT ON public.commissions
+FOR EACH ROW EXECUTE FUNCTION force_pending_commission();
+
+-- 13. Storage Objects (Images Bucket & Invoices Bucket) RLS
+INSERT INTO storage.buckets (id, name, public) 
+VALUES 
+  ('images', 'images', true),
+  ('invoices', 'invoices', false)
+ON CONFLICT (id) DO NOTHING;
+
 DROP POLICY IF EXISTS "Admins can manage images storage" ON storage.objects;
 DROP POLICY IF EXISTS "Public can view images" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can manage invoices storage" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can upload invoices" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view own invoices" ON storage.objects;
 
+-- Images Bucket: Public read, Admin manage
 CREATE POLICY "Public can view images" ON storage.objects
   FOR SELECT
   USING (bucket_id = 'images');
@@ -222,4 +279,17 @@ CREATE POLICY "Admins can manage images storage" ON storage.objects
   FOR ALL
   USING (bucket_id = 'images' AND public.is_admin())
   WITH CHECK (bucket_id = 'images' AND public.is_admin());
+
+-- Invoices Bucket: Admin manage, Users read own invoices
+CREATE POLICY "Admins can manage invoices storage" ON storage.objects
+  FOR ALL
+  USING (bucket_id = 'invoices' AND public.is_admin())
+  WITH CHECK (bucket_id = 'invoices' AND public.is_admin());
+
+CREATE POLICY "Users can view own invoices" ON storage.objects
+  FOR SELECT
+  USING (
+    bucket_id = 'invoices' AND 
+    ((auth.uid())::text = (storage.foldername(name))[1] OR public.is_admin())
+  );
 

@@ -33,7 +33,7 @@ export default function AuthPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      if (user.app_metadata?.role === "admin" || user.email === "admin@pencilart.com") {
+      if (user.app_metadata?.role === "admin") {
         router.push("/8392-admin");
       } else {
         router.push(redirectPath);

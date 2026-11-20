@@ -101,7 +101,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             >
               Edit Profile
             </Link>
-            {(user.app_metadata?.role === "admin" || user.email === siteConfig.adminEmail) && (
+            {user.app_metadata?.role === "admin" && (
               <Link
                 href="/8392-admin"
                 onClick={onClose}

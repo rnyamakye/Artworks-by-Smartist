@@ -24,15 +24,31 @@ const ContactForm: React.FC = () => {
       return;
     }
 
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const message = formData.get("message") as string;
+    const name = (formData.get("name") as string)?.trim();
+    const email = (formData.get("email") as string)?.trim();
+    const message = (formData.get("message") as string)?.trim();
+
+    if (!name || name.length > 100) {
+      toast.error("Name must be between 1 and 100 characters.");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!email || email.length < 4 || email.length > 255) {
+      toast.error("Please enter a valid email address.");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!message || message.length > 5000) {
+      toast.error("Message must be between 1 and 5000 characters.");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      // Save to Supabase
+      // Save to Supabase with enforced unread status
       const { error: supabaseError } = await supabase
         .from("contact_messages")
-        .insert([{ name, email, message }]);
+        .insert([{ name, email, message, status: "unread" }]);
 
       if (supabaseError) {
         throw new Error(supabaseError.message);
@@ -80,6 +96,7 @@ const ContactForm: React.FC = () => {
             className="w-full rounded-md border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-shadow"
             name="name"
             type="text"
+            maxLength={100}
             required
           />
         </div>
@@ -93,6 +110,7 @@ const ContactForm: React.FC = () => {
             className="w-full rounded-md border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-shadow"
             name="email"
             type="email"
+            maxLength={255}
             required
           />
         </div>
@@ -107,6 +125,7 @@ const ContactForm: React.FC = () => {
           className="w-full rounded-md border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-shadow"
           name="message"
           rows={5}
+          maxLength={5000}
           required
         />
       </div>

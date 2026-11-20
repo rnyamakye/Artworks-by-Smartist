@@ -34,8 +34,8 @@ export async function proxy(request: NextRequest) {
   const isAdmin =
     user &&
     (user.app_metadata?.role === "admin" ||
-      user.email === process.env.ADMIN_EMAIL ||
-      user.email === "admin@pencilart.com");
+      (Boolean(process.env.ADMIN_EMAIL) &&
+        user.email === process.env.ADMIN_EMAIL));
   const isAdminRoute = request.nextUrl.pathname.startsWith("/8392-admin");
   const isAdminLoginRoute = request.nextUrl.pathname.startsWith("/8392-admin/login");
 
