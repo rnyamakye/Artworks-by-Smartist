@@ -145,7 +145,7 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
                     <div className="absolute right-0 mt-0 w-48 bg-white border border-gray-100 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right pt-2">
                       <div className="py-2 bg-white rounded-xl shadow-sm border border-gray-100">
                         <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile Settings</Link>
-                        {user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
+                        {user.app_metadata?.role === "admin" && (
                           <Link href="/8392-admin" className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 font-medium">Admin Dashboard</Link>
                         )}
                         <button onClick={() => signOut()} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Sign Out</button>

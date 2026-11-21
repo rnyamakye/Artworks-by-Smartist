@@ -1,30 +1,31 @@
+// Creates the admin user (role stored in app_metadata, which visitors cannot edit).
+// Usage:
+//   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... ADMIN_EMAIL=... ADMIN_PASSWORD=... node create_admin.mjs
+// Run it against your own project only; never commit these values.
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321';
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
-const adminEmail = process.env.ADMIN_EMAIL;
-const adminPassword = process.env.ADMIN_PASSWORD;
+const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
 
-if (!adminEmail || !adminPassword) {
-  console.error("Error: ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required.");
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.error("Set SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_EMAIL and ADMIN_PASSWORD.");
+  process.exit(1);
+}
+if (ADMIN_PASSWORD.length < 12) {
+  console.error("ADMIN_PASSWORD must be at least 12 characters.");
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, serviceRoleKey);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-async function createAdmin() {
-  const { data, error } = await supabase.auth.admin.createUser({
-    email: adminEmail,
-    password: adminPassword,
-    email_confirm: true,
-    app_metadata: { role: 'admin' },
-  });
-  
-  if (error) {
-    console.error("Error creating admin user:", error.message);
-  } else {
-    console.log("Admin user created successfully with role 'admin'!", data.user.id);
-  }
+const { data, error } = await supabase.auth.admin.createUser({
+  email: ADMIN_EMAIL,
+  password: ADMIN_PASSWORD,
+  email_confirm: true,
+  app_metadata: { role: 'admin' },
+});
+
+if (error) {
+  console.error("Error creating admin user:", error.message);
+  process.exit(1);
 }
-
-createAdmin();
+console.log("Admin user created with role 'admin':", data.user.id);

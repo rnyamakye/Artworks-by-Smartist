@@ -31,11 +31,8 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAdmin =
-    user &&
-    (user.app_metadata?.role === "admin" ||
-      (Boolean(process.env.ADMIN_EMAIL) &&
-        user.email === process.env.ADMIN_EMAIL));
+  // Admin = role claim in app_metadata (server-only writable). Never match on email.
+  const isAdmin = user?.app_metadata?.role === "admin";
   const isAdminRoute = request.nextUrl.pathname.startsWith("/8392-admin");
   const isAdminLoginRoute = request.nextUrl.pathname.startsWith("/8392-admin/login");
 
